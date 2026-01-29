@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ['...', 'imagemagick', 'postgresql']
+
+[phases.build]
+cmds = ['echo "Using official Chatwoot Docker image"']
+
+[start]
+cmd = 'bundle exec rails ip_lookup:setup && bundle exec rails server -p ${PORT:-3000} -b 0.0.0.0'
