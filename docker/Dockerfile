@@ -150,3 +150,6 @@ COPY --from=pre-builder /app/.git_sha /app/.git_sha
 WORKDIR /app
 
 EXPOSE 3000
+
+# Start Rails server
+CMD ["sh", "-c", "bundle exec rails ip_lookup:setup && bundle exec rails s -p ${PORT:-3000} -b 0.0.0.0"]
