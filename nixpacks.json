@@ -1,0 +1,29 @@
+{
+    "providers": [
+        "ruby"
+    ],
+    "phases": {
+        "setup": {
+            "nixPkgs": [
+                "postgresql",
+                "libpq",
+                "vips",
+                "imagemagick",
+                "git"
+            ]
+        },
+        "install": {
+            "cmds": [
+                "bundle install --jobs 4 --retry 3"
+            ]
+        },
+        "build": {
+            "cmds": [
+                "bundle exec rake assets:precompile"
+            ]
+        }
+    },
+    "start": {
+        "cmd": "bundle exec rails ip_lookup:setup && bundle exec rails server -p $PORT -b 0.0.0.0"
+    }
+}
