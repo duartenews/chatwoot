@@ -51,4 +51,34 @@ Rails.application.configure do
 
   # Amazon SES ActionMailbox configuration
   config.action_mailbox.ses.subscribed_topic = ENV['ACTION_MAILBOX_SES_SNS_TOPIC'] if ENV['ACTION_MAILBOX_SES_SNS_TOPIC'].present?
+
+  if ENV['RESEND_API_KEY'].present?
+    # Senior Dev Hack: Custom delivery method using RestClient already in Gemfile
+    # This avoids updating Gemfile.lock which is hard without the right Ruby version locally.
+    class ResendDelivery
+      def initialize(settings)
+        @settings = settings
+      end
+
+      def deliver!(mail)
+        RestClient.post(
+          "https://api.resend.com/emails",
+          {
+            from: ENV.fetch('MAILER_SENDER_EMAIL', mail.from.first),
+            to: mail.to,
+            subject: mail.subject,
+            html: (mail.html_part&.decoded || mail.body.decoded),
+            text: (mail.text_part&.decoded)
+          }.compact.to_json,
+          {
+            Authorization: "Bearer #{@settings[:api_key]}",
+            'Content-Type': 'application/json'
+          }
+        )
+      end
+    end
+
+    ActionMailer::Base.add_delivery_method :resend_api, ResendDelivery, api_key: ENV['RESEND_API_KEY']
+    config.action_mailer.delivery_method = :resend_api
+  end
 end
